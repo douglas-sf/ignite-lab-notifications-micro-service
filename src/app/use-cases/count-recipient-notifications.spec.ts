@@ -1,5 +1,3 @@
-import { Content } from '@app/entities/content';
-import { Notification } from '@app/entities/notification';
 import { makeNotification } from '@test/factories/notification-factory';
 import { InMemoryNotificationsRepository } from '@test/repositories/in-memory-notifications-repository';
 import { CountRecipientNotifications } from './count-recipient-notifications';
@@ -11,19 +9,23 @@ describe('Count recipient notifications', () => {
       notificationsRepository,
     );
 
-    const promises = ['recipient-1', 'recipient-1', 'recipient-2'].map(
-      async (recipientId) => {
-        const notification = makeNotification({ recipientId });
-        await notificationsRepository.create(notification);
-      },
-    );
+    const recipientIds = ['recipient-1', 'recipient-1', 'recipient-2'];
+
+    const promises = recipientIds.map(async (recipientId) => {
+      const notification = makeNotification({ recipientId });
+      await notificationsRepository.create(notification);
+    });
 
     await Promise.all(promises);
 
     const { count } = await countRecipientNotifications.execute({
-      recipientId: 'recipient-1',
+      recipientId: recipientIds[0],
     });
 
-    expect(count).toEqual(2);
+    const amount = recipientIds.filter(
+      (item) => item === recipientIds[0],
+    ).length;
+
+    expect(count).toEqual(amount);
   });
 });
